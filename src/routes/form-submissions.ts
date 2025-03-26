@@ -72,6 +72,60 @@ async function formSubmissionRoutes(app: FastifyInstance) {
       }
     },
   })
+
+  app.get<{
+    Params: { formId: string }
+  }>('/:formId', {
+    schema: {
+      description: 'Get all submissions for a specific form',
+      tags: ['form submissions'],
+      params: Type.Object({
+        formId: Type.String(),
+      }),
+      response: {
+        200: Type.Array(
+          Type.Object({
+            id: Type.String(),
+            createdAt: Type.String(),
+            answers: Type.Array(
+              Type.Object({
+                question: Type.String(),
+                answer: Type.String(),
+              })
+            ),
+          })
+        ),
+      },
+    },
+    async handler(req, reply) {
+      const { formId } = req.params
+      log.debug({ formId }, 'fetching form submissions')
+
+      try {
+        const submissions = await prisma.sourceRecord.findMany({
+          where: { formId },
+          include: {
+            sourceData: {
+              select: {
+                question: true,
+                answer: true,
+              },
+            },
+          },
+        })
+
+        const formattedSubmissions = submissions.map(submission => ({
+          id: submission.id,
+          answers: submission.sourceData,
+        }))
+
+        return formattedSubmissions
+      } catch (err: any) {
+        log.error({ err }, err.message)
+        throw new ApiError('Failed to fetch form submissions', 500)
+      }
+    },
+  })
 }
 
 export default formSubmissionRoutes
