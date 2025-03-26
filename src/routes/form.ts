@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-
+import { Type } from '@sinclair/typebox'
 import { Form } from '@prisma/client'
 
 import prisma from '../db/db_client'
@@ -15,6 +15,24 @@ async function formRoutes(app: FastifyInstance) {
   app.get<{
     Reply: Form[]
   }>('/', {
+    schema: {
+      description: 'Get all forms',
+      tags: ['forms'],
+      response: {
+        200: Type.Array(
+          Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+            fields: Type.Object({
+              type: Type.String({ default: 'object' }),
+              title: Type.String(),
+              required: Type.Array(Type.String()),
+              properties: Type.Object({}),
+            }),
+          })
+        ),
+      },
+    },
     async handler(req, reply) {
       log.debug('get all forms')
       try {
@@ -49,6 +67,21 @@ async function formRoutes(app: FastifyInstance) {
     Body: ICreateFormBody
     Reply: Form
   }>('/', {
+    schema: {
+      description: 'Create a new form',
+      tags: ['forms'],
+      body: Type.Object({
+        title: Type.String(),
+        schema: Type.Object({}),
+      }),
+      response: {
+        201: Type.Object({
+          id: Type.String(),
+          name: Type.String(),
+          fields: Type.Object({}),
+        }),
+      },
+    },
     async handler(req, reply) {
       const { title, schema } = req.body
       log.debug({ title }, 'create new form')

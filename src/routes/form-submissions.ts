@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { Type } from '@sinclair/typebox'
 import prisma from '../db/db_client'
 import { serializer } from './middleware/pre_serializer'
 import { ISubmitFormAnswers } from './schemas/common'
@@ -12,6 +13,25 @@ async function formSubmissionRoutes(app: FastifyInstance) {
   app.post<{
     Body: ISubmitFormAnswers
   }>('/', {
+    schema: {
+      description: 'Submit form answers',
+      tags: ['form submissions'],
+      body: Type.Object({
+        formId: Type.String(),
+        answers: Type.Array(
+          Type.Object({
+            question: Type.String(),
+            answer: Type.String(),
+          })
+        ),
+      }),
+      response: {
+        201: Type.Object({
+          id: Type.String(),
+          answersCount: Type.Number(),
+        }),
+      },
+    },
     async handler(req, reply) {
       const { formId, answers } = req.body
       log.debug({ formId }, 'create new form submission')
