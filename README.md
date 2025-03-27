@@ -37,7 +37,7 @@ Replace `{your_form_id}` with an actual form ID from the seeded data.
 
 Once the server is running, you can access the interactive Swagger UI at: `http://127.0.0.1:8080/documentation`
 
-📦 ## Related Projects
+## 📦 Related Projects
 Frontend Repo: Vial Forms FE
 
 Make sure to set the backend host in the FE .env file:
